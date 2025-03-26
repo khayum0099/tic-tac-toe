@@ -1,0 +1,99 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+
+#define SIZE 3
+#define RED "\033[1;31m"
+#define BLUE "\033[1;34m"
+#define RESET "\033[0m"
+#define CLEAR_SCREEN "\033[H\033[J"
+
+char board[SIZE][SIZE];
+
+void initializeBoard() {
+    for (int i = 0; i < SIZE; i++) {
+        for (int j = 0; j < SIZE; j++) {
+            board[i][j] = ' ';
+        }
+    }
+}
+
+void printBoard() {
+    printf(CLEAR_SCREEN);
+    printf("\n");
+    for (int i = 0; i < SIZE; i++) {
+        for (int j = 0; j < SIZE; j++) {
+            if (board[i][j] == 'X')
+                printf(" %sX%s ", RED, RESET);
+            else if (board[i][j] == 'O')
+                printf(" %sO%s ", BLUE, RESET);
+            else
+                printf("   ");
+
+            if (j < SIZE - 1) printf("|");
+        }
+        printf("\n");
+        if (i < SIZE - 1) printf("---+---+---\n");
+    }
+    printf("\n");
+    usleep(500000); // Delay for animation effect
+}
+
+int checkWin() {
+    for (int i = 0; i < SIZE; i++) {
+        if (board[i][0] == board[i][1] && board[i][1] == board[i][2] && board[i][0] != ' ') return 1;
+        if (board[0][i] == board[1][i] && board[1][i] == board[2][i] && board[0][i] != ' ') return 1;
+    }
+    if (board[0][0] == board[1][1] && board[1][1] == board[2][2] && board[0][0] != ' ') return 1;
+    if (board[0][2] == board[1][1] && board[1][1] == board[2][0] && board[0][2] != ' ') return 1;
+    return 0;
+}
+
+int isDraw() {
+    for (int i = 0; i < SIZE; i++) {
+        for (int j = 0; j < SIZE; j++) {
+            if (board[i][j] == ' ') return 0;
+        }
+    }
+    return 1;
+}
+
+void playGame() {
+    int row, col, player = 1;
+    char mark;
+    initializeBoard();
+
+    while (1) {
+        printBoard();
+        mark = (player == 1) ? 'X' : 'O';
+        printf("Player %d (%s%c%s), enter row and column (0-2): ", player, (mark == 'X') ? RED : BLUE, mark, RESET);
+        scanf("%d %d", &row, &col);
+
+        if (row < 0 || row >= SIZE || col < 0 || col >= SIZE || board[row][col] != ' ') {
+            printf("Invalid move! Try again.\n");
+            continue;
+        }
+
+        board[row][col] = mark;
+        printBoard();
+
+        if (checkWin()) {
+            printBoard();
+            printf("Player %d (%s%c%s) wins!\n", player, (mark == 'X') ? RED : BLUE, mark, RESET);
+            break;
+        }
+
+        if (isDraw()) {
+            printBoard();
+            printf("It's a draw!\n");
+            break;
+        }
+
+        player = (player == 1) ? 2 : 1;
+    }
+}
+
+int main() {
+    playGame();
+    return 0;
+}
